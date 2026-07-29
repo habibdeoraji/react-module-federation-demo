@@ -2,6 +2,9 @@
 
 **Live:** https://react-module-federation-demo.vercel.app
 
+Want to build this same thing yourself, step by step? See
+[IMPLEMENTATION.md](IMPLEMENTATION.md).
+
 Two fully independent React + Vite apps composed together at runtime:
 
 - **`Parent`** (this directory) — the shell/host app. Has its own `package.json`,
