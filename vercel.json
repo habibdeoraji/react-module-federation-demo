@@ -1,0 +1,8 @@
+{
+  "installCommand": "npm install && npm install --prefix child",
+  "buildCommand": "npm run build:all",
+  "outputDirectory": "build",
+  "rewrites": [
+    { "source": "/((?!.*\\..*).*)", "destination": "/index.html" }
+  ]
+}

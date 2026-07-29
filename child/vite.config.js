@@ -3,7 +3,11 @@ import react from '@vitejs/plugin-react'
 import { federation } from '@module-federation/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // Prod build gets served nested under /child-app/ on the shared host,
+  // so its own asset URLs need that prefix baked in. Dev keeps serving
+  // from its own root since it runs on its own dev server/port.
+  base: mode === 'production' ? '/child-app/' : '/',
   plugins: [
     react(),
     federation({
@@ -30,4 +34,4 @@ export default defineConfig({
     strictPort: true,
     cors: true,
   },
-})
+}))

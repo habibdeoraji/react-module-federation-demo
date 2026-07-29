@@ -1,8 +1,8 @@
 # Parent + Child — Micro-Frontend via Module Federation
 
-A reference/demo project — no live deployment, just the code and setup for
-running it locally. Two fully independent React + Vite apps composed together
-at runtime:
+**Live:** https://react-module-federation-demo.vercel.app
+
+Two fully independent React + Vite apps composed together at runtime:
 
 - **`Parent`** (this directory) — the shell/host app. Has its own `package.json`,
   `src/`, and build.
@@ -74,9 +74,9 @@ Parent (host, :5173)                    child (remote, :5174)
 - Nothing is imported at build time across the two apps — Parent's build
   never touches child's `src/`, and vice versa. The only coupling is the
   runtime URL to `remoteEntry.js`.
-- Each app keeps its own independent build/deploy pipeline. You could deploy
-  child to a completely different host/CDN and just update the `entry` URL
-  in Parent's config.
+- In dev, that URL is `http://localhost:5174/remoteEntry.js` (child's own dev
+  server). In production, it's the relative path `/child-app/remoteEntry.js`
+  — see [Production build](#production-build) for why.
 
 ### Key files
 
@@ -85,7 +85,7 @@ Parent (host, :5173)                    child (remote, :5174)
 | [`vite.config.js`](vite.config.js) | Parent's federation config — declares itself `parent_host` and points at `child_app`'s `remoteEntry.js` |
 | [`child/vite.config.js`](child/vite.config.js) | Child's federation config — declares itself `child_app` and exposes `./App` (its `src/App.jsx`) |
 | [`src/App.jsx`](src/App.jsx) | Parent's router shell (`react-router-dom` `<Routes>`) |
-| [`src/pages/Home.jsx`](src/pages/Home.jsx) | Parent's home page (voting UI) + the "Open Child App →" button |
+| [`src/pages/Home.jsx`](src/pages/Home.jsx) | Parent's home page — the "Open Child App →" button |
 | [`src/pages/ChildPage.jsx`](src/pages/ChildPage.jsx) | The `/child` route — `React.lazy(() => import('child_app/App'))` wrapped in `Suspense`, plus the back link |
 | [`child/src/App.jsx`](child/src/App.jsx) | The child app's actual UI — this is the exact component that gets federated in, unmodified from how it'd run standalone |
 
@@ -110,17 +110,64 @@ Each app's `npm run build` outputs to a `build/` folder (not Vite's default
 `dist/`) — configured via `build.outDir` in each `vite.config.js`, to match
 the Create React App convention.
 
-```bash
-# build child first
-cd child && npm run build && npm run preview   # serves remoteEntry.js on :5174
+Module Federation needs child reachable at *some* URL at runtime — that part
+doesn't go away. But "some URL" doesn't have to mean two separate hosts or
+two deploy steps. This repo builds toward **one deployment**: one server
+serves both apps' `build/` folders together from a single origin, with child
+nested under a sub-path.
 
-# then build parent
-cd .. && npm run build && npm run preview       # serves the shell on :5173
+```bash
+npm run build:all
 ```
 
-For a real deployment, child needs to be hosted somewhere reachable (its own
-static host/CDN/subdomain), and Parent's `vite.config.js` `remotes.child_app.entry`
-URL needs to point there instead of `localhost:5174`.
+This ([`build-all.mjs`](build-all.mjs)) does three things:
+1. `npm run build` in Parent → `build/`
+2. `npm run build` in `child/` → `child/build/`
+3. Copies `child/build/` into `build/child-app/`
+
+The result is one self-contained folder:
+
+```
+build/
+├── index.html, assets/…      ← Parent
+└── child-app/
+    ├── remoteEntry.js, assets/…   ← child
+```
+
+Two config details make this line up:
+- **`child/vite.config.js`**: `base` is `/child-app/` in production (so
+  child's own asset URLs resolve correctly once nested under that path) and
+  `/` in dev (its dev server still serves from its own root).
+- **`vite.config.js`** (Parent): the federation `entry` is the relative path
+  `/child-app/remoteEntry.js` in production instead of the dev-mode
+  `localhost:5174` URL — same-origin, so no CORS to configure either.
+
+Serve the combined `build/` folder as one static site — locally with
+`npm run preview`, or upload it as one unit to any static host (a single
+Vercel/Netlify project, one S3 bucket, one nginx server, one Docker image).
+No matter which, it's one deploy step and one URL for users.
+
+### Deployed on Vercel
+
+[`vercel.json`](vercel.json) tells Vercel to run `npm run build:all` and
+serve `build/` as the output — one Vercel project, no separate project for
+child. It also adds the SPA-fallback rewrite client-side routes need
+(`/child` isn't a real file on disk; without the rewrite, a direct hit on
+that URL 404s instead of loading `index.html` and letting React Router take
+over):
+
+```json
+"rewrites": [
+  { "source": "/((?!.*\\..*).*)", "destination": "/index.html" }
+]
+```
+
+That regex rewrites any path *without* a dot in it to `/index.html` (client
+routes like `/child`), while leaving anything that looks like a real file
+(`/child-app/remoteEntry.js`, `/assets/*.js`) alone so it's served as-is.
+
+To redeploy: `vercel --prod` from this directory (needs `vercel login` or a
+token from https://vercel.com/account/tokens first).
 
 ## Known note
 
