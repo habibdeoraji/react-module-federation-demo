@@ -1,0 +1,135 @@
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin-bottom: 32px;
+}
+
+.options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.option {
+  text-align: left;
+}
+
+.vote-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 2px solid var(--accent-border, #444);
+  background: var(--accent-bg, #1a1a1a);
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.1s;
+}
+
+.vote-btn:hover {
+  border-color: var(--accent, #646cff);
+}
+
+.vote-btn:active {
+  transform: scale(0.98);
+}
+
+.vote-btn.voted {
+  border-color: var(--accent, #646cff);
+  box-shadow: 0 0 0 1px var(--accent, #646cff);
+}
+
+.option-label {
+  font-weight: 600;
+}
+
+.option-count {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.bar-track {
+  margin-top: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(128, 128, 128, 0.25);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--accent, #646cff);
+  transition: width 0.3s ease;
+}
+
+.percent {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.footer {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reset-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #444);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  border-color: var(--accent, #646cff);
+}
+
+.open-child-btn {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 2px solid var(--accent-strong, #555ad9);
+  background: var(--accent-strong, #555ad9);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.open-child-btn:hover {
+  opacity: 0.9;
+}
+
+.open-child-btn:active {
+  transform: scale(0.98);
+}
+
+.child-page-bar {
+  max-width: 480px;
+  margin: 24px auto 0;
+  padding: 0 20px;
+}
+
+.child-page-bar a {
+  text-decoration: none;
+}
